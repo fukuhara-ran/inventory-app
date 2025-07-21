@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,9 +17,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class)->except(['show', 'create', 'edit']);
     Route::post('products/destroy-multiple', [ProductController::class, 'destroyMultiple'])->name('products.destroy-multiple');
 
-    Route::get('stocks', function () {
-        return Inertia::render('stocks');
-    })->name('stocks');
+    Route::resource('items', ItemController::class)->except(['show', 'create', 'edit']);
+Route::post('items/destroy-multiple', [ItemController::class, 'destroyMultiple'])->name('items.destroy-multiple');
 
     Route::get('orders', function () {
         return Inertia::render('orders');
