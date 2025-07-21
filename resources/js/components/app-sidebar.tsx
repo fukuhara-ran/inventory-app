@@ -18,8 +18,8 @@ const mainNavItems: NavItem[] = [
         icon: Package,
     },
     {
-        title: 'Stocks',
-        href: '/stocks',
+        title: 'Items',
+        href: '/items',
         icon: PackageOpen,
     },
     {
