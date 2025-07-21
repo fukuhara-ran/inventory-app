@@ -18,13 +18,13 @@ class ProductController extends Controller
     public function index(Request $request): Response
     {
         $products = Product::with('category')
-            ->when($request->search, function ($query, $search) {
+            ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhereHas('category', function ($q) use ($search) {
                           $q->where('name', 'like', "%{$search}%");
                       });
             })
-            ->when($request->category, function ($query, $category) {
+            ->when($request->input('category'), function ($query, $category) {
                 $query->where('category_id', $category);
             })
             ->orderBy('created_at', 'desc')
@@ -80,8 +80,8 @@ class ProductController extends Controller
             'ids.*' => 'exists:products,id',
         ]);
 
-        Product::whereIn('id', $request->ids)->delete();
+        Product::whereIn('id', $request->input('ids'))->delete();
 
-        return back()->with('success', count($request->ids) . ' products deleted successfully.');
+        return back()->with('success', count($request->input('ids')) . ' products deleted successfully.');
     }
 }
