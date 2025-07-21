@@ -14,8 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -209,38 +209,69 @@ export default function Products({ products, categories, filters }: ProductsProp
                         />
                     </div>
                     <div className="flex gap-2">
-                        <Select
-                            value={categoryFilter || undefined} // Perbaikan: jangan pass string kosong
-                            onValueChange={(value) => setCategoryFilter(value || '')}
-                        >
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="All Categories" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {/* Hapus opsi "All Categories" sebagai SelectItem dengan value kosong */}
-                                {categories.map((category) => (
-                                    <SelectItem key={category.id} value={category.id.toString()}>
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Button variant="outline" onClick={handleSearch}>
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filter
+                        <Button onClick={handleSearch} variant="outline">
+                            <Search className="mr-2 h-4 w-4" />
+                            Search
                         </Button>
-                        {/* Tambahkan tombol Clear Filter jika ada filter aktif */}
-                        {categoryFilter && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    {categoryFilter ? categories.find((cat) => cat.id.toString() === categoryFilter)?.name || 'Filter' : 'Filter'}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setCategoryFilter('');
+                                        router.get(
+                                            '/products',
+                                            {
+                                                search: searchValue || undefined,
+                                            },
+                                            {
+                                                preserveState: true,
+                                                replace: true,
+                                            },
+                                        );
+                                    }}
+                                >
+                                    All Categories
+                                </DropdownMenuItem>
+                                {categories.map((category) => (
+                                    <DropdownMenuItem
+                                        key={category.id}
+                                        onClick={() => {
+                                            const newCategoryFilter = category.id.toString();
+                                            setCategoryFilter(newCategoryFilter);
+                                            router.get(
+                                                '/products',
+                                                {
+                                                    search: searchValue || undefined,
+                                                    category: newCategoryFilter,
+                                                },
+                                                {
+                                                    preserveState: true,
+                                                    replace: true,
+                                                },
+                                            );
+                                        }}
+                                    >
+                                        {category.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        {/* Clear filter button */}
+                        {(categoryFilter || searchValue) && (
                             <Button
                                 variant="outline"
                                 onClick={() => {
                                     setCategoryFilter('');
-                                    // Auto trigger search untuk clear filter
+                                    setSearchValue('');
                                     router.get(
                                         '/products',
-                                        {
-                                            search: searchValue || undefined,
-                                        },
+                                        {},
                                         {
                                             preserveState: true,
                                             replace: true,

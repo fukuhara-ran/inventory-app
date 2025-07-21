@@ -35,9 +35,9 @@ export default function ProductForm({ categories, product, onClose }: ProductFor
     const { data, setData, post, put, processing, errors, reset } = useForm({
         name: product?.name ?? '',
         category_id: product?.category_id ?? 0, // Ubah dari '' ke 0
-        quantity: product?.quantity ?? 0,
+        quantity: product?.quantity.toString() ?? '',
         unit: product?.unit ?? '',
-        price: product?.price ?? 0,
+        price: product?.price.toString() ?? '',
         description: product?.description ?? '',
     });
 
@@ -102,7 +102,7 @@ export default function ProductForm({ categories, product, onClose }: ProductFor
                             id="quantity"
                             type="number"
                             value={data.quantity}
-                            onChange={(e) => setData('quantity', parseInt(e.target.value) || 0)}
+                            onChange={(e) => setData('quantity', e.target.value)}
                             placeholder="0"
                             min="0"
                         />
@@ -128,7 +128,7 @@ export default function ProductForm({ categories, product, onClose }: ProductFor
                         id="price"
                         type="number"
                         value={data.price}
-                        onChange={(e) => setData('price', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => setData('price', e.target.value)}
                         placeholder="0"
                         min="0"
                         step="0.01"
