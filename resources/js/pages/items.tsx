@@ -23,13 +23,20 @@ import { Head, router } from '@inertiajs/react';
 import { Edit, Filter, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-interface Item {
+interface Category {
     id: number;
     name: string;
     type: string;
+    description?: string;
+}
+
+interface Item {
+    id: number;
+    name: string;
     quantity: number;
     min_quantity: number;
-    note?: string;
+    category_id: number;
+    category: Category;
     created_at: string;
 }
 
@@ -43,10 +50,10 @@ interface PaginatedItems {
 
 interface ItemsProps {
     items: PaginatedItems;
-    types: string[];
+    categories: Category[]; // Fixed: was 'types: string[]'
     filters: {
         search?: string;
-        type?: string;
+        category?: string; // Fixed: was 'type?: string'
     };
 }
 
@@ -57,12 +64,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Items({ items, types, filters }: ItemsProps) {
+export default function Items({ items, categories, filters }: ItemsProps) {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingItem, setEditingItem] = useState<Item | null>(null);
     const [searchValue, setSearchValue] = useState(filters.search || '');
-    const [typeFilter, setTypeFilter] = useState(filters.type || '');
+    const [categoryFilter, setCategoryFilter] = useState(filters.category || '');
 
     const getStockStatus = (quantity: number, minQuantity: number) => {
         if (quantity === 0) {
@@ -79,7 +86,7 @@ export default function Items({ items, types, filters }: ItemsProps) {
             '/items',
             {
                 search: searchValue || undefined,
-                type: typeFilter || undefined,
+                category: categoryFilter || undefined, // Fixed: was 'type'
             },
             {
                 preserveState: true,
@@ -175,7 +182,7 @@ export default function Items({ items, types, filters }: ItemsProps) {
                                     <DialogTitle>Create New Item</DialogTitle>
                                     <DialogDescription>Add a new item to your inventory.</DialogDescription>
                                 </DialogHeader>
-                                <ItemForm onClose={() => setShowCreateModal(false)} />
+                                <ItemForm categories={categories} onClose={() => setShowCreateModal(false)} />
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -202,21 +209,21 @@ export default function Items({ items, types, filters }: ItemsProps) {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline">
                                     <Filter className="mr-2 h-4 w-4" />
-                                    {typeFilter ? types.find((t) => t === typeFilter) : 'Filter by Type'}
+                                    {categoryFilter ? categories.find((c) => c.id.toString() === categoryFilter)?.name : 'All Categories'}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                {types.map((type) => (
+                                {categories.map((category) => (
                                     <DropdownMenuItem
-                                        key={type}
+                                        key={category.id}
                                         onClick={() => {
-                                            const newTypeFilter = typeFilter === type ? '' : type;
-                                            setTypeFilter(newTypeFilter);
+                                            const newCategoryFilter = categoryFilter === category.id.toString() ? '' : category.id.toString(); // Fixed comparison
+                                            setCategoryFilter(newCategoryFilter);
                                             router.get(
                                                 '/items',
                                                 {
                                                     search: searchValue || undefined,
-                                                    type: newTypeFilter || undefined,
+                                                    category: newCategoryFilter || undefined, // Fixed: was 'type'
                                                 },
                                                 {
                                                     preserveState: true,
@@ -225,17 +232,17 @@ export default function Items({ items, types, filters }: ItemsProps) {
                                             );
                                         }}
                                     >
-                                        {type}
+                                        {category.name}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
                         {/* Clear filter button */}
-                        {(typeFilter || searchValue) && (
+                        {(categoryFilter || searchValue) && (
                             <Button
                                 variant="outline"
                                 onClick={() => {
-                                    setTypeFilter('');
+                                    setCategoryFilter('');
                                     setSearchValue('');
                                     router.get(
                                         '/items',
@@ -265,7 +272,7 @@ export default function Items({ items, types, filters }: ItemsProps) {
                                     />
                                 </TableHead>
                                 <TableHead>Name</TableHead>
-                                <TableHead>Type</TableHead>
+                                <TableHead>Category</TableHead>
                                 <TableHead>Quantity</TableHead>
                                 <TableHead>Min Quantity</TableHead>
                                 <TableHead>Status</TableHead>
@@ -287,7 +294,7 @@ export default function Items({ items, types, filters }: ItemsProps) {
                                         </TableCell>
                                         <TableCell className="font-medium">{item.name}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">{item.type}</Badge>
+                                            <Badge variant="outline">{item.category.name}</Badge>
                                         </TableCell>
                                         <TableCell>{item.quantity}</TableCell>
                                         <TableCell>{item.min_quantity}</TableCell>
@@ -307,7 +314,11 @@ export default function Items({ items, types, filters }: ItemsProps) {
                                                             <DialogTitle>Edit Item</DialogTitle>
                                                             <DialogDescription>Update item information.</DialogDescription>
                                                         </DialogHeader>
-                                                        <ItemForm item={editingItem || undefined} onClose={() => setEditingItem(null)} />
+                                                        <ItemForm
+                                                            categories={categories}
+                                                            item={editingItem || undefined}
+                                                            onClose={() => setEditingItem(null)}
+                                                        />
                                                     </DialogContent>
                                                 </Dialog>
 
