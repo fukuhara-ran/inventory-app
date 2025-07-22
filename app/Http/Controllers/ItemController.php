@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ItemRequest;
+use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,47 +14,47 @@ class ItemController extends Controller
 {
     public function index(Request $request): Response
     {
-        $items = Item::when($request->input('search'), function ($query, $search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('type', 'like', "%{$search}%");
-        })
-            ->when($request->input('type'), function ($query, $type) {
-                $query->where('type', $type);
+        $items = Item::with('category')
+            ->when($request->input('search'), function ($query, $search) {
+                $query->where(function ($subQuery) use ($search): void {
+                    $subQuery->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('category', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($request->input('category'), function ($query, $category) {
+                $query->where('category_id', $category);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        $types = Item::select('type')
-            ->distinct()
-            ->orderBy('type')
-            ->pluck('type');
+        // Hanya ambil kategori untuk items
+        $categories = Category::forItems()->orderBy('name')->get();
 
         return Inertia::render('items', [
             'items' => $items,
-            'types' => $types,
-            'filters' => $request->only(['search', 'type']),
+            'categories' => $categories,
+            'filters' => $request->only(['search', 'category']),
         ]);
     }
 
     public function store(ItemRequest $request): RedirectResponse
     {
         Item::create($request->validated());
-
         return back()->with('success', 'Item created successfully.');
     }
 
     public function update(ItemRequest $request, Item $item): RedirectResponse
     {
         $item->update($request->validated());
-
         return back()->with('success', 'Item updated successfully.');
     }
 
     public function destroy(Item $item): RedirectResponse
     {
         $item->delete();
-
         return back()->with('success', 'Item deleted successfully.');
     }
 
@@ -65,7 +66,6 @@ class ItemController extends Controller
         ]);
 
         Item::whereIn('id', $validated['ids'])->delete();
-
         return back()->with('success', count($validated['ids']) . ' items deleted successfully.');
     }
 }

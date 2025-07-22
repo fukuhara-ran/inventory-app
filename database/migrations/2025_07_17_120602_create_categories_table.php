@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
+            $table->enum('type', ['product', 'item']); // Menentukan apakah untuk product atau item
             $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['type', 'name']);
         });
     }
 

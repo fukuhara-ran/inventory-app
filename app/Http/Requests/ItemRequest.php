@@ -15,10 +15,9 @@ class ItemRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'type' => 'required|string|max:100',
+            'category_id' => 'required|exists:categories,id',
             'quantity' => 'required|integer|min:0',
             'min_quantity' => 'required|integer|min:1',
-            'note' => 'nullable|string',
         ];
     }
 }

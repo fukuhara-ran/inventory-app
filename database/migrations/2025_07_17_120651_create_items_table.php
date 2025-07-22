@@ -11,12 +11,13 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('type');
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->integer('quantity')->default(0);
             $table->integer('min_quantity')->default(1);
-            $table->text('note')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['category_id', 'name']);
         });
     }
 
