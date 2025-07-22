@@ -9,21 +9,34 @@ use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
+    use WithoutModelEvents;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $categories = Category::all();
+        $categories = Category::where('type', 'product')->get();
 
         if ($categories->isEmpty()) {
+            return;
+        }
+
+        // Cache category IDs to avoid repeated queries
+        $electronicsId = $categories->where('name', 'Electronics')->first()?->id;
+        $clothingId = $categories->where('name', 'Clothing')->first()?->id;
+        $foodBeveragesId = $categories->where('name', 'Food & Beverages')->first()?->id;
+        $booksId = $categories->where('name', 'Books')->first()?->id;
+
+        // Check if required categories exist
+        if (!$electronicsId || !$clothingId || !$foodBeveragesId || !$booksId) {
             return;
         }
 
         $products = [
             [
                 'name' => 'Laptop Gaming ASUS ROG',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 15,
                 'unit' => 'pcs',
                 'price' => 15000000,
@@ -31,7 +44,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Smartphone Samsung Galaxy',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 25,
                 'unit' => 'pcs',
                 'price' => 8000000,
@@ -39,7 +52,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'T-Shirt Cotton',
-                'category_id' => $categories->where('name', 'Clothing')->first()->id,
+                'category_id' => $clothingId,
                 'quantity' => 50,
                 'unit' => 'pcs',
                 'price' => 150000,
@@ -47,7 +60,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Coffee Arabica',
-                'category_id' => $categories->where('name', 'Food & Beverages')->first()->id,
+                'category_id' => $foodBeveragesId,
                 'quantity' => 8,
                 'unit' => 'kg',
                 'price' => 120000,
@@ -55,7 +68,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Programming Book',
-                'category_id' => $categories->where('name', 'Books')->first()->id,
+                'category_id' => $booksId,
                 'quantity' => 0,
                 'unit' => 'pcs',
                 'price' => 500000,
@@ -64,7 +77,7 @@ class ProductSeeder extends Seeder
             // 15 produk tambahan
             [
                 'name' => 'Wireless Headphones Sony',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 12,
                 'unit' => 'pcs',
                 'price' => 2500000,
@@ -72,7 +85,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Mechanical Keyboard RGB',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 20,
                 'unit' => 'pcs',
                 'price' => 1200000,
@@ -80,7 +93,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Denim Jeans Premium',
-                'category_id' => $categories->where('name', 'Clothing')->first()->id,
+                'category_id' => $clothingId,
                 'quantity' => 30,
                 'unit' => 'pcs',
                 'price' => 450000,
@@ -88,7 +101,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Hoodie Winter Collection',
-                'category_id' => $categories->where('name', 'Clothing')->first()->id,
+                'category_id' => $clothingId,
                 'quantity' => 18,
                 'unit' => 'pcs',
                 'price' => 350000,
@@ -96,7 +109,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Green Tea Organic',
-                'category_id' => $categories->where('name', 'Food & Beverages')->first()->id,
+                'category_id' => $foodBeveragesId,
                 'quantity' => 45,
                 'unit' => 'box',
                 'price' => 85000,
@@ -104,7 +117,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Chocolate Dark Premium',
-                'category_id' => $categories->where('name', 'Food & Beverages')->first()->id,
+                'category_id' => $foodBeveragesId,
                 'quantity' => 2,
                 'unit' => 'kg',
                 'price' => 180000,
@@ -112,7 +125,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Web Development Guide',
-                'category_id' => $categories->where('name', 'Books')->first()->id,
+                'category_id' => $booksId,
                 'quantity' => 15,
                 'unit' => 'pcs',
                 'price' => 420000,
@@ -120,7 +133,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Data Science Handbook',
-                'category_id' => $categories->where('name', 'Books')->first()->id,
+                'category_id' => $booksId,
                 'quantity' => 8,
                 'unit' => 'pcs',
                 'price' => 650000,
@@ -128,7 +141,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Gaming Mouse Wireless',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 35,
                 'unit' => 'pcs',
                 'price' => 750000,
@@ -136,7 +149,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Monitor 4K 27 inch',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 6,
                 'unit' => 'pcs',
                 'price' => 4200000,
@@ -144,7 +157,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Sneakers Sport Edition',
-                'category_id' => $categories->where('name', 'Clothing')->first()->id,
+                'category_id' => $clothingId,
                 'quantity' => 28,
                 'unit' => 'pairs',
                 'price' => 850000,
@@ -152,7 +165,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Instant Noodles Pack',
-                'category_id' => $categories->where('name', 'Food & Beverages')->first()->id,
+                'category_id' => $foodBeveragesId,
                 'quantity' => 0,
                 'unit' => 'pack',
                 'price' => 25000,
@@ -160,7 +173,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Business Strategy Book',
-                'category_id' => $categories->where('name', 'Books')->first()->id,
+                'category_id' => $booksId,
                 'quantity' => 12,
                 'unit' => 'pcs',
                 'price' => 380000,
@@ -168,7 +181,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Bluetooth Speaker Portable',
-                'category_id' => $categories->where('name', 'Electronics')->first()->id,
+                'category_id' => $electronicsId,
                 'quantity' => 22,
                 'unit' => 'pcs',
                 'price' => 650000,
@@ -176,7 +189,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'name' => 'Polo Shirt Classic',
-                'category_id' => $categories->where('name', 'Clothing')->first()->id,
+                'category_id' => $clothingId,
                 'quantity' => 40,
                 'unit' => 'pcs',
                 'price' => 220000,
