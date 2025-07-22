@@ -12,17 +12,16 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of products.
-     */
     public function index(Request $request): Response
     {
         $products = Product::with('category')
             ->when($request->input('search'), function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhereHas('category', function ($q) use ($search) {
-                          $q->where('name', 'like', "%{$search}%");
-                      });
+                $query->where(function ($subQuery) use ($search): void {
+                    $subQuery->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('category', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                });
             })
             ->when($request->input('category'), function ($query, $category) {
                 $query->where('category_id', $category);
@@ -31,7 +30,8 @@ class ProductController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $categories = Category::orderBy('name')->get();
+        // Hanya ambil kategori untuk produk
+        $categories = Category::forProducts()->orderBy('name')->get();
 
         return Inertia::render('products', [
             'products' => $products,
@@ -40,39 +40,24 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created product.
-     */
     public function store(ProductRequest $request): RedirectResponse
     {
         Product::create($request->validated());
-
         return back()->with('success', 'Product created successfully.');
     }
 
-    /**
-     * Update the specified product.
-     */
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
         $product->update($request->validated());
-
         return back()->with('success', 'Product updated successfully.');
     }
 
-    /**
-     * Remove the specified product.
-     */
     public function destroy(Product $product): RedirectResponse
     {
         $product->delete();
-
         return back()->with('success', 'Product deleted successfully.');
     }
 
-    /**
-     * Remove multiple products.
-     */
     public function destroyMultiple(Request $request): RedirectResponse
     {
         $request->validate([
@@ -81,7 +66,6 @@ class ProductController extends Controller
         ]);
 
         Product::whereIn('id', $request->input('ids'))->delete();
-
         return back()->with('success', count($request->input('ids')) . ' products deleted successfully.');
     }
 }
